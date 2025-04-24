@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  ORDERED
+  DISPATCHED
+  RECEIVED
+  STORAGE
+}
+
+model User {
+  id       String @id @default(cuid())
+  username String @unique
+  password String
+  email    String @unique
+  role     Role   @default(USER)
+
+  purchaseOrderItems PurchaseOrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  products    Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model Product {
+  id           String @id @default(cuid())
+  name         String
+  sellingPrice Float
+  currentStock Float  @default(0)
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  soldItems     SaleItems[]
+  purchaseItems PurchaseOrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@index([categoryId])
+}
+
+model PurchaseOrderItem {
+  id                String      @id @default(cuid())
+  quantity          Float
+  unitCost          Float
+  remainingQuantity Float
+  orderDate         DateTime
+  recievedDate      DateTime?
+  status            OrderStatus @default(ORDERED)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  soldItems SaleItems[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@index([purchaseOrderId])
+  @@index([userId])
+  @@index([status])
+}
+
+model SaleItems {
+  id           String @id @default(cuid())
+  quantity     Float
+  SellingPrice Float
+  CostPrice    Float  @default(0)
+
+  saleId String
+  sale   Sale   @relation(fields: [saleId], references: [id])
+
+  productId String
+  Product   Product @relation(fields: [productId], references: [id])
+
+  purchaseOrderItemId String
+  purchaseOrderItem   PurchaseOrderItem @relation(fields: [purchaseOrderItemId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@index([saleId])
+  @@index([purchaseOrderItemId])
+  @@map("SoldItems")
+}
+
+model Sale {
+  id       String   @id @default(cuid())
+  saleDate DateTime @default(now())
+  amount   Float
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  soldItems SaleItems[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([saleDate])
+  @@index([customerId])
+}
+
+model Customer {
+  id   String @id @default(cuid())
+  name String
+
+  sales Sale[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model Vendor {
+  id      String  @id @default(cuid())
+  name    String
+  contact String?
+
+  purchaseOrders PurchaseOrder[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model PurchaseOrder {
+  id        String      @id @default(cuid())
+  status    OrderStatus @default(ORDERED)
+  totalCost Float
+
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id])
+
+  purchaseOrderItems PurchaseOrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([vendorId])
+  @@index([status])
+}
