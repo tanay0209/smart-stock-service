@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -21,13 +21,12 @@ enum OrderStatus {
 }
 
 model User {
-  id       String @id @default(cuid())
-  username String @unique
-  password String
-  email    String @unique
-  role     Role   @default(USER)
-
-  purchaseOrderItems PurchaseOrderItem[]
+  id           String  @id @default(cuid())
+  username     String  @unique
+  password     String?
+  email        String  @unique
+  role         Role    @default(USER)
+  refreshToken String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -57,7 +56,7 @@ model Product {
   category   Category @relation(fields: [categoryId], references: [id])
 
   soldItems     SaleItems[]
-  purchaseItems PurchaseOrderItem[]
+  purchaseItems OrderItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -66,7 +65,7 @@ model Product {
   @@index([categoryId])
 }
 
-model PurchaseOrderItem {
+model OrderItem {
   id                String      @id @default(cuid())
   quantity          Float
   unitCost          Float
@@ -75,11 +74,8 @@ model PurchaseOrderItem {
   recievedDate      DateTime?
   status            OrderStatus @default(ORDERED)
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
   purchaseOrderId String
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  purchaseOrder   Purchase @relation(fields: [purchaseOrderId], references: [id])
 
   productId String
   product   Product @relation(fields: [productId], references: [id])
@@ -91,7 +87,6 @@ model PurchaseOrderItem {
 
   @@index([productId])
   @@index([purchaseOrderId])
-  @@index([userId])
   @@index([status])
 }
 
@@ -108,7 +103,7 @@ model SaleItems {
   Product   Product @relation(fields: [productId], references: [id])
 
   purchaseOrderItemId String
-  purchaseOrderItem   PurchaseOrderItem @relation(fields: [purchaseOrderItemId], references: [id])
+  purchaseOrderItem   OrderItem @relation(fields: [purchaseOrderItemId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -116,7 +111,6 @@ model SaleItems {
   @@index([productId])
   @@index([saleId])
   @@index([purchaseOrderItemId])
-  @@map("SoldItems")
 }
 
 model Sale {
@@ -153,7 +147,7 @@ model Vendor {
   name    String
   contact String?
 
-  purchaseOrders PurchaseOrder[]
+  purchaseOrders Purchase[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -161,7 +155,7 @@ model Vendor {
   @@index([name])
 }
 
-model PurchaseOrder {
+model Purchase {
   id        String      @id @default(cuid())
   status    OrderStatus @default(ORDERED)
   totalCost Float
@@ -169,7 +163,7 @@ model PurchaseOrder {
   vendorId String
   vendor   Vendor @relation(fields: [vendorId], references: [id])
 
-  purchaseOrderItems PurchaseOrderItem[]
+  purchaseOrderItems OrderItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
