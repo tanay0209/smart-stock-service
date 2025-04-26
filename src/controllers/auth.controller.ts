@@ -1,10 +1,10 @@
 import { Request, Response } from "express"
-import { registerSchema } from "src/schemas/register.schema"
-import { sendError, sendSuccess } from "src/lib/api-response"
-import prisma from "src/lib/prisma"
-import { generateAccessToken, hashPassword, generateRefreshToken, verifyPassword } from "src/lib/utils"
-import { loginSchema } from "src/schemas/login.schema"
-import { AuthRequest } from "src/lib/auth-request"
+import { registerSchema } from "../schemas/register.schema.js"
+import { sendError, sendSuccess } from "../lib/api-response.js"
+import prisma from "../lib/prisma.js"
+import { generateAccessToken, hashPassword, generateRefreshToken, verifyPassword } from "../lib/utils.js"
+import { loginSchema } from "../schemas/login.schema.js"
+import { AuthRequest } from "../lib/auth-request.js"
 import jwt from 'jsonwebtoken'
 
 export const register = async (request: Request, response: Response) => {
@@ -24,7 +24,7 @@ export const register = async (request: Request, response: Response) => {
             }
         })
         if (existingUser) {
-            return sendError(response, "Username or email alreayd exists")
+            return sendError(response, "Username or email already exists")
         }
         if (!password) {
             await prisma.user.create({
@@ -43,7 +43,7 @@ export const register = async (request: Request, response: Response) => {
                 email
             }
         })
-        return sendSuccess(response, "User created", undefined, 201)
+        return sendSuccess(response, null, "User created", 201)
     } catch (error) {
         console.error("Register Controller", error)
         return sendError(response, "Something went wrong")
@@ -127,7 +127,7 @@ export const userDetails = async (request: AuthRequest, response: Response) => {
     }
 }
 
-export const logout = async (request: AuthRequest, response: Response) => { 
+export const logout = async (request: AuthRequest, response: Response) => {
     try {
         const userId = request.user!.id
         const user = await prisma.user.findFirst({
@@ -155,7 +155,7 @@ export const logout = async (request: AuthRequest, response: Response) => {
 
 export const accessToken = async (request: Request, response: Response) => {
     try {
-        const refreshToken = request.body
+        const { refreshToken } = request.body
         if (!refreshToken) {
             return sendError(response, "Refresh token required", 400)
         }

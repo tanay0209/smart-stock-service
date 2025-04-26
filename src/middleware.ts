@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from "express"
+import { Response, NextFunction } from "express"
 import jwt from "jsonwebtoken"
-import { sendError } from "src/lib/api-response"
-import { AuthRequest } from "./lib/auth-request"
+import { sendError } from "./lib/api-response.js"
+import { AuthRequest } from "./lib/auth-request.js"
 
 
 export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -20,7 +20,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
 
-        req.user.id = decoded.userId
+        req.user = { id: decoded.userId }
         next()
     } catch (error: any) {
         return sendError(res, "Invalid token", 401)
