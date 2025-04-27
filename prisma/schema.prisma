@@ -28,10 +28,50 @@ model User {
   role         Role    @default(USER)
   refreshToken String?
 
+  shops        UserOnShop[]
+  createdShops Shop[]       @relation("CreatedShops")
+  Shop      Shop[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([email])
+}
+
+model Shop {
+  id   String @id @default(cuid())
+  name String
+
+  createdByUserId String
+  createdByUser   User   @relation("CreatedShops", fields: [createdByUserId], references: [id])
+
+  updatedByUserId String?
+  updatedByUser   User?   @relation(fields: [updatedByUserId], references: [id])
+
+  users UserOnShop[]
+
+  customers Customer[]
+  products  Product[]
+  vendors   Vendor[]
+  sales     Sale[]
+  purchases Purchase[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserOnShop {
+  id     String @id @default(cuid())
+  userId String
+  shopId String
+
+  user User @relation(fields: [userId], references: [id])
+  shop Shop @relation(fields: [shopId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, shopId])
 }
 
 model Category {
@@ -55,6 +95,9 @@ model Product {
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
 
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id])
+
   soldItems     SaleItems[]
   purchaseItems OrderItem[]
 
@@ -63,6 +106,7 @@ model Product {
 
   @@index([name])
   @@index([categoryId])
+  @@index([shopId])
 }
 
 model OrderItem {
@@ -121,6 +165,9 @@ model Sale {
   customerId String
   customer   Customer @relation(fields: [customerId], references: [id])
 
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id])
+
   soldItems SaleItems[]
 
   createdAt DateTime @default(now())
@@ -128,17 +175,22 @@ model Sale {
 
   @@index([saleDate])
   @@index([customerId])
+  @@index([shopId])
 }
 
 model Customer {
   id   String @id @default(cuid())
   name String
 
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id])
+
   sales Sale[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([shopId, name])
   @@index([name])
 }
 
@@ -147,12 +199,16 @@ model Vendor {
   name    String
   contact String?
 
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id])
+
   purchaseOrders Purchase[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([name])
+  @@index([shopId])
 }
 
 model Purchase {
@@ -163,11 +219,15 @@ model Purchase {
   vendorId String
   vendor   Vendor @relation(fields: [vendorId], references: [id])
 
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id])
+
   purchaseOrderItems OrderItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([vendorId])
+  @@index([shopId])
   @@index([status])
 }

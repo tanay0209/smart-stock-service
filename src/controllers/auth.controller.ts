@@ -104,7 +104,6 @@ export const login = async (request: Request, response: Response) => {
 export const userDetails = async (request: AuthRequest, response: Response) => {
     try {
         const userId = request.user!.id
-
         const user = await prisma.user.findFirst({
             where: {
                 id: userId
@@ -114,6 +113,16 @@ export const userDetails = async (request: AuthRequest, response: Response) => {
                 username: true,
                 email: true,
                 role: true,
+                shops: {
+                    select: {
+                        shop: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        }
+                    }
+                }
             }
         })
 
@@ -153,12 +162,13 @@ export const logout = async (request: AuthRequest, response: Response) => {
     }
 }
 
-export const accessToken = async (request: Request, response: Response) => {
+export const accessToken = async (request: AuthRequest, response: Response) => {
     try {
         const { refreshToken } = request.body
         if (!refreshToken) {
             return sendError(response, "Refresh token required", 400)
         }
+
         const exisitingToken = await prisma.user.findFirst({
             where: {
                 refreshToken,
@@ -188,7 +198,7 @@ export const accessToken = async (request: Request, response: Response) => {
             }
         })
         const accessToken = generateAccessToken(userId)
-        return sendSuccess(response, { accessToken, refreshToken }, "Access token generated")
+        return sendSuccess(response, { accessToken, refreshToken: newToken }, "Access token generated")
     } catch (error) {
         console.error("Generate Refresh token controller", error);
         return sendError(response, "Something went wrong")

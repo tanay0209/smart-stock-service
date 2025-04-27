@@ -7,7 +7,7 @@ const authRouter = Router()
 
 authRouter.post("/v1/register", register)
 authRouter.post("/v1/login", login)
-authRouter.post("/v1/access-token", accessToken)
+authRouter.post("/v1/access-token", authenticate, accessToken)
 
 
 authRouter.get("/v1/user-details", authenticate, userDetails)
