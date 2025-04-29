@@ -30,7 +30,7 @@ model User {
 
   shops        UserOnShop[]
   createdShops Shop[]       @relation("CreatedShops")
-  Shop      Shop[]
+  Shop         Shop[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -60,10 +60,17 @@ model Shop {
   updatedAt DateTime @updatedAt
 }
 
+enum StoreRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+
 model UserOnShop {
-  id     String @id @default(cuid())
+  id     String    @id @default(cuid())
   userId String
   shopId String
+  role   StoreRole
 
   user User @relation(fields: [userId], references: [id])
   shop Shop @relation(fields: [shopId], references: [id])
