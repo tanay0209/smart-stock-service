@@ -1,8 +1,8 @@
 import { Response } from "express";
-import { sendError, sendSuccess } from "src/lib/api-response.js";
-import { AuthRequest } from "src/lib/auth-request.js";
-import { storeSchema } from "src/schemas/store.schema.js";
-import prisma from "../lib/prisma"
+import { sendError, sendSuccess } from "../lib/api-response.js";
+import { AuthRequest } from "../lib/auth-request.js";
+import { storeSchema } from "../schemas/store.schema.js";
+import prisma from "../lib/prisma.js"
 
 export const createStore = async (request: AuthRequest, response: Response) => {
     try {
