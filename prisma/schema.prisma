@@ -202,9 +202,8 @@ model Customer {
 }
 
 model Vendor {
-  id      String  @id @default(cuid())
-  name    String
-  contact String?
+  id   String @id @default(cuid())
+  name String
 
   shopId String
   shop   Shop   @relation(fields: [shopId], references: [id])
