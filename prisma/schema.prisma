@@ -32,8 +32,9 @@ model User {
   createdShops Shop[]       @relation("CreatedShops")
   Shop         Shop[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Category  Category[]
 
   @@index([email])
 }
@@ -87,9 +88,13 @@ model Category {
   description String?
   products    Product[]
 
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([name, userId])
   @@index([name])
 }
 
